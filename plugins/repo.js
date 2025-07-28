@@ -1,67 +1,73 @@
-const { cmd } = require('../command');
+const config = require('../config')
+const { cmd } = require('../command')
+const os = require("os")
+const { runtime, sleep } = require('../lib/functions')
+const axios = require('axios')
 
 cmd({
-  pattern: "repo",
-  desc: "Show bot repository and deploy info",
-  category: "system",
-  react: "📦",
-  filename: __filename
-}, async (conn, m, { from }) => {
+    pattern: "repo",
+    alias: ["sc", "script", "repository"],
+    desc: "Show the bot's GitHub repository",
+    react: "📂",
+    category: "info",
+    filename: __filename,
+},
+async (conn, mek, m, { from, reply }) => {
+    const githubRepoURL = 'https://github.com/mejjar00254/PK-XMD';
 
-  const text = `
-╭───❖ 「 *PK-XMD GitHub Repo* 」 ❖───⬣
-│🔹 *Name:* PK-XMD
-│🔸 *Owner:* mejjar00254
-│📦 *Repo:* PK-XMD
-│🌐 *URL:* https://github.com/mejjar00254/PK-XMD
-│🧑‍💻 *Maintainer:* Pkdriller
-╰──────────────────────────────⬣
+    try {
+        const [, username, repoName] = githubRepoURL.match(/github\.com\/([^/]+)\/([^/]+)/);
 
-📘 *Description:*
-PK-XMD is a Multi-functional WhatsApp Bot using Baileys library with powerful features and auto-deploy support.
+        const response = await axios.get(`https://api.github.com/repos/${username}/${repoName}`);
+        const repoData = response.data;
 
-🚀 *Deploy This Bot On:*
-┌────────────────────┐
-│ 🌐 Render.com
-│ 🛠️ Railway.app
-│ ☁️ Heroku.com
-└────────────────────┘
+        const formattedInfo = `
+╭─〔 *PK-XMD REPOSITORY* 〕
+│
+├─ *📌 Repo Name:* ${repoData.name}
+├─ *👤 Owner:* ${repoData.owner.login}
+├─ *⭐ Stars:* ${repoData.stargazers_count}
+├─ *⑂ Forks:* ${repoData.forks_count}
+├─ *📄 Description:* ${repoData.description || 'Powerful WhatsApp Multi-Device Bot by Pkdriller'}
+│
+├─ *🔗 GitHub Link:*
+│   ${repoData.html_url}
+│
+├─ *🌍 Channel:*
+│   https://whatsapp.com/channel/0029Vad7YNyJuyA77CtIPX0x
+│
+╰─ *🚀 Powered by Pkdriller*
+`.trim();
 
-📍 Simply fork or clone the repo, edit config file, and deploy using your preferred platform.
+        await conn.sendMessage(from, {
+            image: { url: `https://files.catbox.moe/fgiecg.jpg` }, // you can change image
+            caption: formattedInfo,
+            contextInfo: {
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363288304618280@newsletter',
+                    newsletterName: 'PK-XMD UPDATES',
+                    serverMessageId: 110
+                }
+            }
+        }, { quoted: {
+            key: {
+                fromMe: false,
+                participant: `0@s.whatsapp.net`,
+                remoteJid: "status@broadcast"
+            },
+            message: {
+                contactMessage: {
+                    displayName: "PK-XMD VERIFIED",
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:PK-XMD;BOT;;;\nFN:PK-XMD\nitem1.TEL;waid=254700000000:+254 700 000000\nitem1.X-ABLabel:Bot\nEND:VCARD`
+                }
+            }
+        } });
 
-🔗 *GitHub:* https://github.com/mejjar00254/PK-XMD
-⚡ *Powered by:* Pkdriller
-`;
-
-  const vcard = {
-    displayName: "PK-XMD Bot",
-    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:PK-XMD Bot\nORG:PK-XMD Official;\nTEL;type=CELL;type=VOICE;waid=254700000000:+254700000000\nX-USER-TYPE:BOT\nEND:VCARD`
-  };
-
-  await conn.sendMessage(from, {
-    text,
-    contextInfo: {
-      mentionedJid: [m.sender],
-      externalAdReply: {
-        title: "PK-XMD GitHub Repo",
-        body: "Deploy easily on Render | Railway | Heroku",
-        thumbnailUrl: "https://files.catbox.moe/fgiecg.jpg",
-        sourceUrl: "https://github.com/mejjar00254/PK-XMD",
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true
-      },
-      forwardedNewsletterMessageInfo: {
-        newsletterName: "PK-XMD Updates",
-        newsletterJid: "120363288304618280@newsletter"
-      },
-      quotedMessage: {
-        contactMessage: {
-          displayName: "PK-XMD",
-          vcard: vcard.vcard
-        }
-      }
+    } catch (error) {
+        console.error("❌ Error fetching repo:", error);
+        reply("❌ Failed to fetch repository info. Please try again later.");
     }
-  }, { quoted: m });
 });
-      

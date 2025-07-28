@@ -9,7 +9,7 @@ cmd({
   desc: "Fetch and display all available bot commands",
   category: "system",
   filename: __filename,
-}, async (Void, m, text, { prefix }) => {
+}, async (Void, m, text) => { // removed { prefix } from params
   try {
     const commandDir = path.join(__dirname, '../plugins');
     const commandFiles = fs.readdirSync(commandDir).filter(file => file.endsWith('.js'));
@@ -25,7 +25,7 @@ cmd({
       if (matches) {
         const extracted = matches.map(x => x.split(':')[1].replace(/["'`,]/g, '').trim());
         totalCommands += extracted.length;
-        commandList.push(`📁 *${file}*\n${extracted.map(cmd => `╰➤ \`${prefix}${cmd}\``).join('\n')}`);
+        commandList.push(`📁 *${file}*\n${extracted.map(cmd => `╰➤ \`${cmd}\``).join('\n')}`);
       }
     }
 
@@ -36,7 +36,6 @@ cmd({
 ┃ 👑 *Total Commands:* ${totalCommands}
 ┃ 📅 *Date:* ${date}
 ┃ ⏰ *Time:* ${time}
-┃ 🤖 *Prefix:* ${prefix}
 ╰━━━━━━━━━━━━━━━━━━━━⬣\n\n${commandList.join('\n\n')}`;
 
     await Void.sendMessage(m.chat, {
@@ -60,20 +59,23 @@ cmd({
           showAdAttribution: true
         }
       }
-    }, { quoted: {
-      key: {
-        fromMe: false,
-        participant: '0@s.whatsapp.net',
-        remoteJid: 'status@broadcast'
-      },
-      message: {
-        contactMessage: {
-          displayName: "PK-XMD | Powered by Pkdriller",
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:PK-XMD | Pkdriller\nORG:Pkdriller;\nTEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000000\nEND:VCARD`,
-          jpegThumbnail: Buffer.alloc(0)
+    }, {
+      quoted: {
+        key: {
+          fromMe: false,
+          participant: '0@s.whatsapp.net',
+          remoteJid: 'status@broadcast'
+        },
+        message: {
+          contactMessage: {
+            displayName: "PK-XMD | Powered by Pkdriller",
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:PK-XMD | Pkdriller\nORG:Pkdriller;\nTEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000000\nEND:VCARD`,
+            jpegThumbnail: Buffer.alloc(0)
+          }
         }
       }
-    }});
+    });
+
   } catch (err) {
     console.error(err);
     await m.reply('❌ Error: Could not fetch the command list.');
