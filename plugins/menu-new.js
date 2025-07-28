@@ -1,15 +1,17 @@
 const { cmd } = require('../command');
 const config = require('../config');
 const moment = require('moment-timezone');
+const fs = require('fs');
 const axios = require('axios');
+const path = require('path');
 
 cmd({
   pattern: "menu",
-  desc: "Show all bot commands in organized format",
+  desc: "Show all bot commands",
   category: "system",
   filename: __filename,
-  react: "📦"
-}, async (m, _, { prefix, commands, uptime, botName }) => {
+  react: "💙"
+}, async (m, _, { prefix, commands, sendFile, uptime, botName, botFooter }) => {
   try {
     const categories = {};
     const total = Object.keys(commands).length;
@@ -24,7 +26,7 @@ cmd({
     const time = moment().tz('Africa/Nairobi').format('HH:mm:ss');
     const date = moment().tz('Africa/Nairobi').format('DD/MM/YYYY');
 
-    let text = `┏━〔 *${botName} Commands List* 〕━⬣
+    let text = `┏━〔 *${botName} Commands Menu* 〕━⬣
 ┃ ✦ *Prefix:* ${prefix}
 ┃ ✦ *Time:* ${time}
 ┃ ✦ *Date:* ${date}
@@ -52,34 +54,32 @@ ${categories[cat].join('\n')}
       }
     };
 
-    const audioUrl = 'https://files.catbox.moe/rasczj.mp3';
-    const res = await axios.get(audioUrl, { responseType: 'arraybuffer' });
+    // Download music if not already saved
+    const audioPath = path.join(__dirname, '../media/menu.mp3');
+    if (!fs.existsSync(audioPath)) {
+      const res = await axios.get('https://files.catbox.moe/rasczj.mp3', { responseType: 'stream' });
+      await new Promise((resolve, reject) => {
+        const stream = res.data.pipe(fs.createWriteStream(audioPath));
+        stream.on('finish', resolve);
+        stream.on('error', reject);
+      });
+    }
 
-    await m.client.sendMessage(m.from, {
-      audio: res.data,
-      mimetype: 'audio/mp4',
-      ptt: true,
+    await sendFile(m.from, audioPath, '', text.trim(), m, {
+      quoted,
       contextInfo: {
         mentionedJid: [m.sender],
         forwardingScore: 999,
         isForwarded: true,
-        externalAdReply: {
-          title: 'PK-XMD Bot',
-          body: 'Follow PK-XMD Official Channel',
-          mediaType: 2,
-          thumbnailUrl: 'https://files.catbox.moe/fgiecg.jpg',
-          mediaUrl: 'https://whatsapp.com/channel/0029Vad7YNyJuyA77CtIPX0x',
-          sourceUrl: 'https://github.com/pkphotographer1911/PK-XMD'
-        },
         forwardedNewsletterMessageInfo: {
           newsletterName: "PK-XMD Official",
           newsletterJid: "120363288304618280@newsletter"
         }
       }
-    }, { quoted });
-
+    });
   } catch (e) {
     console.error(e);
-    await m.reply("❌ Error displaying commands list.");
+    await m.reply("❌ Failed to display menu.");
   }
 });
+          
