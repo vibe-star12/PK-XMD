@@ -5,7 +5,6 @@ const os = require('os');
 const path = require("path");
 const { cmd } = require("../command");
 
-// Helper function to format bytes
 function formatBytes(bytes) {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -24,58 +23,66 @@ cmd({
   filename: __filename
 }, async (client, message, { reply, quoted }) => {
   try {
-    // Check if quoted message exists and has media
     const quotedMsg = quoted || message;
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
     
     if (!mimeType || !mimeType.startsWith('image/')) {
-      return reply("Please reply to an image file (JPEG/PNG)");
+      return reply("❌ Please reply to an image file (JPEG/PNG)");
     }
 
-    // Download the media
     const mediaBuffer = await quotedMsg.download();
     const fileSize = formatBytes(mediaBuffer.length);
     
-    // Get file extension based on mime type
     let extension = '';
-    if (mimeType.includes('image/jpeg')) extension = '.jpg';
-    else if (mimeType.includes('image/png')) extension = '.png';
-    else {
-      return reply("Unsupported image format. Please use JPEG or PNG");
-    }
+    if (mimeType.includes('jpeg')) extension = '.jpg';
+    else if (mimeType.includes('png')) extension = '.png';
+    else return reply("❌ Unsupported image format. Please use JPEG or PNG");
 
-    const tempFilePath = path.join(os.tmpdir(), `imgscan_${Date.now()}${extension}`);
-    fs.writeFileSync(tempFilePath, mediaBuffer);
+    const tempPath = path.join(os.tmpdir(), `imgscan_${Date.now()}${extension}`);
+    fs.writeFileSync(tempPath, mediaBuffer);
 
-    // Upload to Catbox
+    // Upload image to Catbox
     const form = new FormData();
-    form.append('fileToUpload', fs.createReadStream(tempFilePath), `image${extension}`);
     form.append('reqtype', 'fileupload');
+    form.append('fileToUpload', fs.createReadStream(tempPath));
 
-    const uploadResponse = await axios.post("https://catbox.moe/user/api.php", form, {
+    const upload = await axios.post('https://catbox.moe/user/api.php', form, {
       headers: form.getHeaders()
     });
 
-    const imageUrl = uploadResponse.data;
-    fs.unlinkSync(tempFilePath); // Clean up temp file
+    const imageUrl = upload.data;
+    fs.unlinkSync(tempPath);
 
-    if (!imageUrl) {
-      throw "Failed to upload image to Catbox";
+    if (!imageUrl || !imageUrl.startsWith("https://")) {
+      return reply("❌ Failed to upload image.");
     }
 
-    // Scan the image using the API
-    const scanUrl = `https://apis.davidcyriltech.my.id/imgscan?url=${encodeURIComponent(imageUrl)}`;
-    const scanResponse = await axios.get(scanUrl);
+    // Use OCR.space API to extract text
+    const apiKey = "helloworld"; // Free demo key
+    const ocrRes = await axios.post(`https://api.ocr.space/parse/imageurl`, null, {
+      params: {
+        apikey: apiKey,
+        url: imageUrl,
+        language: "eng",
+        isOverlayRequired: false
+      }
+    });
 
-    if (!scanResponse.data.success) {
-      throw scanResponse.data.message || "Failed to analyze image";
+    const result = ocrRes.data;
+    if (!result || !result.ParsedResults || result.ParsedResults.length === 0) {
+      return reply("❌ No text found in the image.");
     }
 
-    // Format the response
+    const extractedText = result.ParsedResults[0].ParsedText.trim();
+    if (!extractedText) return reply("❌ Couldn't extract any text from image.");
+
     await reply(
-      `🔍 *Image Analysis Results*\n\n` +
-      `${scanResponse.data.result}\n\n` +
-      `> © Powered by JawadTechX 💜`
+      `🔍 *Image Scan Results*\n\n` +
+      `📦 File Size: ${fileSize}\n` +
+      `🌐 URL: ${imageUrl}\n\n` +
+      `📝 *Extracted Text:*\n` +
+      "```" + extractedText + "```\n\n" +
+      `> 🔗 Powered by OCR.Space | Catbox | PK-XMD`
     );
 
   } catch (error) {
@@ -83,3 +90,4 @@ cmd({
     await reply(`❌ Error: ${error.message || error}`);
   }
 });
+    
