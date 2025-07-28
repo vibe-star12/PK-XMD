@@ -1,86 +1,85 @@
 const { cmd } = require('../command');
 const fs = require('fs');
-const moment = require('moment-timezone');
+const path = require('path');
 const os = require('os');
+const moment = require('moment-timezone');
+const config = require('../config');
 
 cmd({
   pattern: "menu",
-  desc: "Show full bot command list",
+  desc: "Display full command menu",
   category: "main",
   filename: __filename,
-  react: "📃"
-}, async (m, text, { conn, prefix, commands }) => {
+  react: "📜"
+}, async (m, match, conn) => {
   try {
-    const time = moment().tz("Africa/Nairobi").format("HH:mm:ss");
-    const date = moment().tz("Africa/Nairobi").format("DD/MM/YYYY");
-    const uptime = Math.floor(process.uptime());
-    const up = `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${uptime % 60}s`;
+    const commands = Object.values(global.plugins).map((plugin) => plugin.pattern).filter(Boolean);
+    const prefix = '.*';
+    const totalCommands = commands.length;
+    const time = moment().tz('Africa/Nairobi').format('HH:mm:ss');
+    const date = moment().tz('Africa/Nairobi').format('dddd, MMMM Do YYYY');
+    const uptime = process.uptime();
+    const uptimeString = new Date(uptime * 1000).toISOString().substr(11, 8);
 
-    const total = Object.keys(commands).length;
-    const listed = Object.keys(commands).filter(v => !v.startsWith('$')).map(v => `★ .*${v}`).join('\n');
+    const commandList = commands.map(cmd => `★ ${prefix}${cmd}`).join('\n');
 
-    const menuText = `╭──〔 *🌐 PK-XMD MENU* 〕──╮
-│ 🕒 *Time:* ${time}
-│ 📆 *Date:* ${date}
-│ ⚙️ *Uptime:* ${up}
-│ 💠 *Prefix:* *.*
-│ 🧩 *Total:* ${total} Commands
-╰────◇◆◇────╯
+    const menuMessage = `╭───〔 *📜 PK-XMD BOT MENU* 〕───⭓
+│
+│ *🕒 Time:* ${time}
+│ *📅 Date:* ${date}
+│ *📶 Uptime:* ${uptimeString}
+│ *🧩 Prefix:* ${prefix}
+│ *📚 Total Commands:* ${totalCommands}
+│
+╰──────────────⭓
 
-${listed}
+${commandList}
 
-╭─〔 *📢 DEPLOY PK-XMD BOT* 〕─╮
-│ 🔗 *Image:* https://example.com/menu.jpg
-│ 🎵 *Music:* https://example.com/menu.mp3
-│ 💬 *Channel:* wa.me/254700000000
-╰────────────────────╯
-
-🤖 *Powered by Pkdriller*
+🔗 *Deploy PK-XMD on:*
+https://github.com/pkdriller/PK-XMD
 `;
 
-    const fakeVcard = {
+    const fakeContact = {
       key: {
         fromMe: false,
-        participant: "0@s.whatsapp.net",
-        remoteJid: "status@broadcast"
+        participant: `0@s.whatsapp.net`,
+        remoteJid: 'status@broadcast'
       },
       message: {
         contactMessage: {
-          displayName: "PKDRILLER",
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:PKDRILLER\nORG:PK-XMD Official;\nTEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000 000\nEND:VCARD`,
-          jpegThumbnail: null
+          displayName: "WhatsApp",
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:WhatsApp\nORG:WhatsApp\nTEL;waid=254700000000:+254 700 000000\nitem1.X-ABLabel:Verified Business\nEND:VCARD`,
+          jpegThumbnail: Buffer.from([])
         }
       }
     };
 
     await conn.sendMessage(m.chat, {
-      image: { url: "https://files.catbox.moe/glt48n.jpg" },
-      caption: menuText,
+      image: { url: 'https://files.catbox.moe/glt48n.jpg' }, // fake menu image
+      caption: menuMessage,
       contextInfo: {
-        quotedMessage: fakeVcard.message,
+        quotedMessage: fakeContact.message,
         forwardingScore: 999,
         isForwarded: true,
-        externalAdReply: {
-          title: "PK-XMD WhatsApp Bot",
-          body: "All Commands Listed | Powered by Pkdriller",
-          mediaUrl: "https://whatsapp.com/channel/fakepkxmd",
-          sourceUrl: "https://whatsapp.com/channel/fakepkxmd",
-          mediaType: 2,
-          showAdAttribution: true,
-          renderLargerThumbnail: true,
-          thumbnailUrl: "https://example.com/menu.jpg"
-        },
         forwardedNewsletterMessageInfo: {
-          newsletterName: "PK-XMD Updates",
-          newsletterJid: "120363191191191191@newsletter"
+          newsletterName: "PK-XMD OFFICIAL",
+          newsletterJid: "120363025223777409@newsletter"
         },
-        audio: {
-          url: "https://files.catbox.moe/rasczj.mp3" // Fake music link
+        externalAdReply: {
+          title: "PK-XMD MENU",
+          body: "Powered by Pkdriller",
+          thumbnailUrl: "https://telegra.ph/file/95bbf2011d350aa31d76e.jpg",
+          sourceUrl: "https://github.com/pkdriller/PK-XMD",
+          mediaType: 2,
+          renderLargerThumbnail: false,
+          mediaUrl: "https://files.catbox.moe/rasczj.mp3" // fake audio link
         }
       }
-    }, { quoted: fakeVcard });
+    }, { quoted: fakeContact });
 
-  } catch (e) {
-    await m.reply(`❌ Error in menu:\n\n${e}`);
+  } catch (err) {
+    console.error(err);
+    await m.reply("❌ Failed to load menu. Try again later.");
   }
 });
+        
