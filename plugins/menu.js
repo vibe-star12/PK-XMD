@@ -1,85 +1,101 @@
 const { cmd } = require('../command');
-const moment = require('moment-timezone');
-const fs = require('fs');
 const config = require('../config');
+const fs = require('fs');
+const os = require('os');
+const moment = require('moment-timezone');
 
 cmd({
   pattern: "menu",
-  desc: "Show all bot commands",
+  desc: "Display full bot command list",
   category: "main",
-  filename: __filename
-}, async (m, text, { conn, prefix, commands }) => {
-  const time = moment.tz('Africa/Nairobi').format('HH:mm:ss');
-  const date = moment.tz('Africa/Nairobi').format('dddd, MMMM Do YYYY');
-  const uptime = process.uptime();
-  const hrs = Math.floor(uptime / 3600);
-  const mins = Math.floor((uptime % 3600) / 60);
-  const secs = Math.floor(uptime % 60);
+  filename: __filename,
+  react: "📜"
+}, async (m, text, { conn, commands }) => {
+  try {
+    const prefix = ".*";
+    const time = moment().tz("Africa/Nairobi").format("HH:mm:ss");
+    const date = moment().tz("Africa/Nairobi").format("DD/MM/YYYY");
+    const uptime = process.uptime();
+    const totalCommands = Object.keys(commands).length;
 
-  const totalCmds = Object.values(commands).filter(cmd => cmd.pattern).length;
-  const commandList = Object.values(commands)
-    .filter(cmd => cmd.pattern)
-    .map(cmd => `★ .*${cmd.pattern}`)
-    .join('\n');
+    const upHours = Math.floor(uptime / 3600);
+    const upMinutes = Math.floor((uptime % 3600) / 60);
+    const upSeconds = Math.floor(uptime % 60);
+    const formattedUptime = `${upHours}h ${upMinutes}m ${upSeconds}s`;
 
-  const menu = `*✨ PK-XMD BOT MENU*
+    let menuList = "";
+    for (const name in commands) {
+      menuList += `★ ${prefix}${name}\n`;
+    }
 
-📅 Date: ${date}
-🕒 Time: ${time}
-⏱️ Uptime: ${hrs}h ${mins}m ${secs}s
-📌 Prefix: *.*
-📋 Total Commands: ${totalCmds}
+    const menuText = `╭─❒ 「 *PK-XMD MENU* 」
+│ 🧠 *Uptime:* ${formattedUptime}
+│ 📆 *Date:* ${date}
+│ ⏰ *Time:* ${time}
+│ 🔢 *Commands:* ${totalCommands}
+╰───────────────◆\n\n${menuList}`;
 
-┌──⭓ *COMMANDS*
-${commandList}
-└───────────────⭓
+    // Fake verified contact with blue tick
+    const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:PK-XMD
+ORG:WhatsApp Verified Bot;
+TEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000000
+X-ANDROID-CUSTOM:vnd.android.cursor.item/vnd.whatsapp.profile;
+END:VCARD`;
 
-*Powered by Pkdriller 🔥*`;
-
-  const quotedContact = {
-    key: {
-      fromMe: false,
-      participant: "0@s.whatsapp.net",
-      remoteJid: "status@broadcast"
-    },
-    message: {
-      contactMessage: {
-        displayName: "WhatsApp",
-        vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:WhatsApp Verified Contact\nORG:Meta Verified\nTEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000000\nEND:VCARD`,
-        jpegThumbnail: fs.readFileSync('./media/verified.jpg')
+    const quotedContact = {
+      key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast"
+      },
+      message: {
+        contactMessage: {
+          displayName: "PK-XMD",
+          vcard: vcard,
+          jpegThumbnail: fs.readFileSync('./media/verified.jpg'), // fake blue tick image
+          thumbnail: fs.readFileSync('./media/verified.jpg')
+        }
       }
-    }
-  };
+    };
 
-  const contextInfo = {
-    forwardingScore: 999,
-    isForwarded: true,
-    externalAdReply: {
-      title: "PK-XMD WhatsApp Bot",
-      body: "Follow for more updates",
-      mediaType: 2,
-      mediaUrl: "",
-      sourceUrl: "https://wa.me/254700000000", // Optional
-      showAdAttribution: true,
-      renderLargerThumbnail: false
-    },
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: "120363XXXXX@newsletter",
-      newsletterName: "PK-XMD Updates",
-      serverMessageId: 1
-    }
-  };
+    await conn.sendMessage(m.chat, {
+      image: { url: "https://files.catbox.moe/glt48n.jpg" }, // fake image link ya menu
+      caption: menuText,
+      contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true,
+        externalAdReply: {
+          title: "🎧 PK-XMD Bot Menu",
+          body: "Powered by Pkdriller",
+          mediaType: 2,
+          thumbnail: fs.readFileSync('./media/verified.jpg'),
+          mediaUrl: "https://youtu.be/dQw4w9WgXcQ", // fake music/audio link
+          sourceUrl: "https://whatsapp.com/channel/0029VaLhC5K6WpXfF7tqLA1T" // your channel
+        },
+        forwardedNewsletterMessageInfo: {
+          newsletterJid: "254700000000@newsletter",
+          newsletterName: "PK-XMD News",
+          serverMessageId: 100
+        }
+      }
+    }, { quoted: quotedContact });
 
-  await conn.sendMessage(m.chat, {
-    image: fs.readFileSync('https://files.catbox.moe/0acptc.mp3'),
-    caption: menu,
-    contextInfo
-  }, { quoted: quotedContact });
+    // Fake PTT (voice note)
+    await conn.sendMessage(m.chat, {
+      audio: { url: "https://files.catbox.moe/glt48n.jpg" },
+      mimetype: "audio/mp4",
+      ptt: true,
+      contextInfo: {
+        forwardingScore: 1000,
+        isForwarded: true
+      }
+    });
 
-  await conn.sendMessage(m.chat, {
-    audio: { url: 'https://files.catbox.moe/rasczj.mp3' },
-    mimetype: 'audio/mp4',
-    ptt: true,
-    contextInfo
-  }, { quoted: quotedContact });
+  } catch (e) {
+    console.log(e);
+    return m.reply("⚠️ Error showing menu.");
+  }
 });
+        
