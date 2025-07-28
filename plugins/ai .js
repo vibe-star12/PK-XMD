@@ -46,7 +46,7 @@ const customReplies = (q) => {
 };
 
 cmd({
-  pattern: "ai",
+  pattern: "64",
   alias: ["bot", "dj", "gpt", "gpt4", "bing"],
   desc: "Chat with an AI model",
   category: "ai",
