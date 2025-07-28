@@ -1,16 +1,15 @@
 const { cmd } = require('../command');
 const config = require('../config');
 const moment = require('moment-timezone');
-const fs = require('fs');
-const path = require('path');
+const axios = require('axios');
 
 cmd({
-  pattern: "menu",
+  pattern: "commands",
   desc: "Show all bot commands in organized format",
   category: "system",
   filename: __filename,
   react: "📦"
-}, async (m, _, { prefix, commands, sendFile, uptime, botName, botFooter }) => {
+}, async (m, _, { prefix, commands, uptime, botName, botFooter }) => {
   try {
     const categories = {};
     const total = Object.keys(commands).length;
@@ -48,25 +47,39 @@ ${categories[cat].join('\n')}
       message: {
         contactMessage: {
           displayName: "WhatsApp Verified Contact",
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:WhatsApp Verified\nORG:Meta\nTEL;type=CELL;waid=254700000000:+254 700 000000\nX-ANDROID-CUSTOM:vcard\nEND:VCARD` }
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:WhatsApp Verified\nORG:Meta\nTEL;type=CELL;waid=254700000000:+254 700 000000\nX-ANDROID-CUSTOM:vcard\nEND:VCARD`
+        }
       }
     };
 
-    await sendFile(m.from, 'https://files.catbox.moe/fgiecg.jpg', '', text.trim(), m, {
-      quoted,
+    const audioUrl = 'https://files.catbox.moe/rasczj.mp3';
+    const res = await axios.get(audioUrl, { responseType: 'arraybuffer' });
+
+    await m.conn.sendMessage(m.from, {
+      audio: res.data,
+      mimetype: 'audio/mp4',
+      ptt: true,
       contextInfo: {
         mentionedJid: [m.sender],
         forwardingScore: 999,
         isForwarded: true,
+        externalAdReply: {
+          title: 'PK-XMD Bot',
+          body: 'Follow PK-XMD Official Channel',
+          mediaType: 2,
+          thumbnailUrl: 'https://files.catbox.moe/fgiecg.jpg',
+          mediaUrl: 'https://whatsapp.com/channel/0029Vad7YNyJuyA77CtIPX0x',
+          sourceUrl: 'https://github.com/pkphotographer1911/PK-XMD'
+        },
         forwardedNewsletterMessageInfo: {
           newsletterName: "PK-XMD Official",
-          newsletterJid: "120363288304618280@newsletter"
+          newsletterJid: ".120363288304618280@newsletter"
         }
       }
-    });
+    }, { quoted });
+
   } catch (e) {
     console.error(e);
     await m.reply("❌ Error displaying commands list.");
   }
 });
-    
