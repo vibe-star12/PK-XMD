@@ -4,12 +4,12 @@ const moment = require('moment-timezone');
 const axios = require('axios');
 
 cmd({
-  pattern: "commands",
+  pattern: "menu",
   desc: "Show all bot commands in organized format",
   category: "system",
   filename: __filename,
   react: "📦"
-}, async (m, _, { prefix, commands, uptime, botName, botFooter }) => {
+}, async (m, _, { prefix, commands, uptime, botName }) => {
   try {
     const categories = {};
     const total = Object.keys(commands).length;
@@ -55,7 +55,7 @@ ${categories[cat].join('\n')}
     const audioUrl = 'https://files.catbox.moe/rasczj.mp3';
     const res = await axios.get(audioUrl, { responseType: 'arraybuffer' });
 
-    await m.conn.sendMessage(m.from, {
+    await m.client.sendMessage(m.from, {
       audio: res.data,
       mimetype: 'audio/mp4',
       ptt: true,
@@ -73,7 +73,7 @@ ${categories[cat].join('\n')}
         },
         forwardedNewsletterMessageInfo: {
           newsletterName: "PK-XMD Official",
-          newsletterJid: ".120363288304618280@newsletter"
+          newsletterJid: "120363288304618280@newsletter"
         }
       }
     }, { quoted });
