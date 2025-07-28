@@ -11,12 +11,12 @@ const getContextInfo = (title, url, thumb) => ({
     title: title,
     body: "PK-XMD | Multi-Device WhatsApp Bot",
     thumbnailUrl: thumb || "https://telegra.ph/file/3050269176219cc6e3b8d.jpg",
-    sourceUrl: url || "https://github.com/pkdriller1911/PK-XMD"
+    sourceUrl: url || "https://github.com/pkphotographer1911/PK-XMD"
   },
   forwardingScore: 999,
   isForwarded: true,
   forwardedNewsletterMessageInfo: {
-    newsletterJid: '120363025151570371@newsletter',
+    newsletterJid: '120363288304618280@newsletter',
     newsletterName: 'PK-XMD Updates'
   }
 });
@@ -26,8 +26,8 @@ const customReplies = (q) => {
   const today = moment().tz("Africa/Nairobi");
   if (lower.includes("pk-xmd")) return "🔥 PK-XMD is a Multi-Device WhatsApp Bot made by *PKDRILLER*.";
   if (lower.includes("pkdriller")) return "👑 PKDRILLER is the official creator of the *PK-XMD* WhatsApp bot.";
-  if (lower.includes("channel")) return "📢 Official channel: https://whatsapp.com/channel/0029VaA8mf6K1nF3IbQzvK3Z";
-  if (lower.includes("repo") || lower.includes("github")) return "🔗 GitHub repo: https://github.com/pkdriller1911/PK-XMD";
+  if (lower.includes("channel")) return "📢 Official channel: https://whatsapp.com/channel/0029Vad7YNyJuyA77CtIPX0x";
+  if (lower.includes("repo") || lower.includes("github")) return "🔗 GitHub repo: https://github.com/pkphotogrqpher1911/PK-XMD";
   if (lower.includes("date") || lower.includes("today")) return `📅 Today is ${today.format("dddd, MMMM Do YYYY")}`;
   if (lower.includes("day")) return `📆 Today is *${today.format("dddd")}*`;
   if (lower.includes("time") || lower.includes("clock")) return `⏰ Time in Nairobi: *${getTimeNow()}*`;
@@ -36,7 +36,7 @@ const customReplies = (q) => {
 
 // 1. .64 Command
 cmd({
-  pattern: "64",
+  pattern: "ai",
   alias: ["bot", "dj", "gpt", "gpt4", "bing"],
   desc: "Chat with an AI model",
   category: "ai",
