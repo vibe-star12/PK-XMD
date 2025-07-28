@@ -25,7 +25,7 @@ async (conn, mek, m, { from, quoted, args, q, senderNumber, reply }) => {
 
         const pairingCode = res.data.code;
 
-        const msg = `
+        const captionText = `
 ╭─〔 *PK-XMD PAIRING SUCCESSFUL* 〕
 │
 ├─ *📱 Number:* ${phoneNumber}
@@ -34,36 +34,55 @@ async (conn, mek, m, { from, quoted, args, q, senderNumber, reply }) => {
 ╰─ *🚀 Powered by Pkdriller*
 `.trim();
 
+        // Send with button
         await conn.sendMessage(from, {
-            image: { url: `https://files.catbox.moe/9pxerh.jpg` }, // customize your image here
-            caption: msg,
+            image: { url: `https://files.catbox.moe/9pxerh.jpg` },
+            caption: captionText,
+            footer: 'Tap below to copy the pairing code 🔽',
+            buttons: [
+                {
+                    buttonId: `.copy ${pairingCode}`,
+                    buttonText: { displayText: '📋 Copy Code' },
+                    type: 1
+                }
+            ],
+            headerType: 4,
             contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 999,
                 isForwarded: true,
+                externalAdReply: {
+                    title: "PK-XMD BOT PAIRING",
+                    body: "Deploy your own PK-XMD clone today!",
+                    mediaType: 1,
+                    thumbnailUrl: `https://files.catbox.moe/9pxerh.jpg`,
+                    sourceUrl: "https://github.com/nexustech1911/PK-XMD"
+                },
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363288304618280@newsletter',
                     newsletterName: 'PK-XMD UPDATES',
                     serverMessageId: 119
                 }
             }
-        }, { quoted: {
-            key: {
-                fromMe: false,
-                participant: "0@s.whatsapp.net",
-                remoteJid: "status@broadcast"
-            },
-            message: {
-                contactMessage: {
-                    displayName: "PK-XMD VERIFIED",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:BOT;PK-XMD;;;\nFN:PK-XMD\nitem1.TEL;waid=254700000000:+254 700 000000\nitem1.X-ABLabel:Bot\nEND:VCARD`
+        }, {
+            quoted: {
+                key: {
+                    fromMe: false,
+                    participant: "0@s.whatsapp.net",
+                    remoteJid: "status@broadcast"
+                },
+                message: {
+                    contactMessage: {
+                        displayName: "PK-XMD VERIFIED",
+                        vcard: `BEGIN:VCARD\nVERSION:3.0\nN:BOT;PK-XMD;;;\nFN:PK-XMD\nitem1.TEL;waid=254700000000:+254 700 000000\nitem1.X-ABLabel:Bot\nEND:VCARD`
+                    }
                 }
             }
-        } });
+        });
 
     } catch (error) {
         console.error("❌ Pair command error:", error);
         await reply("❌ Error retrieving pairing code. Try again later.");
     }
 });
-          
+                    
