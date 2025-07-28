@@ -2,20 +2,8 @@ const { cmd } = require('../command');
 const axios = require('axios');
 const moment = require('moment-timezone');
 
-const fakeContact = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast"
-  },
-  message: {
-    contactMessage: {
-      displayName: "PKDRILLER | PK-XMD",
-      vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:PKDRILLER | PK-XMD\nORG:PKDRILLER;\nTEL;type=CELL;type=VOICE;waid=254700000000:+254 700 000000\nEND:VCARD`,
-      jpegThumbnail: Buffer.alloc(0)
-    }
-  }
-};
+// Nairobi time helper
+const getTimeNow = () => moment().tz("Africa/Nairobi").format("HH:mm:ss");
 
 const getContextInfo = (title, url, thumb) => ({
   externalAdReply: {
@@ -42,9 +30,11 @@ const customReplies = (q) => {
   if (lower.includes("repo") || lower.includes("github")) return "🔗 GitHub repo: https://github.com/pkdriller1911/PK-XMD";
   if (lower.includes("date") || lower.includes("today")) return `📅 Today is ${today.format("dddd, MMMM Do YYYY")}`;
   if (lower.includes("day")) return `📆 Today is *${today.format("dddd")}*`;
+  if (lower.includes("time") || lower.includes("clock")) return `⏰ Time in Nairobi: *${getTimeNow()}*`;
   return null;
 };
 
+// 1. .64 Command
 cmd({
   pattern: "64",
   alias: ["bot", "dj", "gpt", "gpt4", "bing"],
@@ -52,22 +42,21 @@ cmd({
   category: "ai",
   react: "🤖",
   filename: __filename
-},
-async (conn, mek, m, { q, reply, react }) => {
+}, async (conn, mek, m, { q, reply }) => {
   try {
     if (!q) return reply("Please provide a message for the AI.\nExample: `.ai Hello`");
 
     const fixed = customReplies(q);
-    if (fixed) return await conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("AI Response") }, { quoted: fakeContact });
+    if (fixed) return conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("AI Response") });
 
-    const apiUrl = `https://lance-frank-asta.onrender.com/api/gpt?q=${encodeURIComponent(q)}`;
-    const { data } = await axios.get(apiUrl);
-    if (!data || !data.message) return reply("AI failed to respond.");
+    const res = await axios.get(`https://lance-frank-asta.onrender.com/api/gpt?q=${encodeURIComponent(q)}`);
+    if (!res.data || !res.data.message) return reply("AI failed to respond.");
 
-    await conn.sendMessage(m.chat, {
-      text: `🤖 *AI Response:*\n\n${data.message}`,
+    const time = getTimeNow();
+    return conn.sendMessage(m.chat, {
+      text: `🤖 *AI Response:*\n\n${res.data.message}\n\n⏰ *Time:* ${time}`,
       contextInfo: getContextInfo("AI Response")
-    }, { quoted: fakeContact });
+    });
 
   } catch (e) {
     console.error("AI Error:", e);
@@ -75,6 +64,7 @@ async (conn, mek, m, { q, reply, react }) => {
   }
 });
 
+// 2. .openai Command
 cmd({
   pattern: "openai",
   alias: ["chatgpt", "gpt3", "open-gpt"],
@@ -82,22 +72,21 @@ cmd({
   category: "ai",
   react: "🧠",
   filename: __filename
-},
-async (conn, mek, m, { q, reply, react }) => {
+}, async (conn, mek, m, { q, reply }) => {
   try {
     if (!q) return reply("Please provide a message for OpenAI.\nExample: `.openai Hello`");
 
     const fixed = customReplies(q);
-    if (fixed) return await conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("OpenAI Response") }, { quoted: fakeContact });
+    if (fixed) return conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("OpenAI Response") });
 
-    const apiUrl = `https://vapis.my.id/api/openai?q=${encodeURIComponent(q)}`;
-    const { data } = await axios.get(apiUrl);
-    if (!data || !data.result) return reply("OpenAI failed to respond.");
+    const res = await axios.get(`https://vapis.my.id/api/openai?q=${encodeURIComponent(q)}`);
+    if (!res.data || !res.data.result) return reply("OpenAI failed to respond.");
 
-    await conn.sendMessage(m.chat, {
-      text: `🧠 *OpenAI Response:*\n\n${data.result}`,
+    const time = getTimeNow();
+    return conn.sendMessage(m.chat, {
+      text: `🧠 *OpenAI Response:*\n\n${res.data.result}\n\n⏰ *Time:* ${time}`,
       contextInfo: getContextInfo("OpenAI Response")
-    }, { quoted: fakeContact });
+    });
 
   } catch (e) {
     console.error("OpenAI Error:", e);
@@ -105,6 +94,7 @@ async (conn, mek, m, { q, reply, react }) => {
   }
 });
 
+// 3. .deepseek Command
 cmd({
   pattern: "deepseek",
   alias: ["deep", "seekai"],
@@ -112,22 +102,21 @@ cmd({
   category: "ai",
   react: "🧠",
   filename: __filename
-},
-async (conn, mek, m, { q, reply, react }) => {
+}, async (conn, mek, m, { q, reply }) => {
   try {
     if (!q) return reply("Please provide a message for DeepSeek AI.\nExample: `.deepseek Hello`");
 
     const fixed = customReplies(q);
-    if (fixed) return await conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("DeepSeek Response") }, { quoted: fakeContact });
+    if (fixed) return conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("DeepSeek Response") });
 
-    const apiUrl = `https://api.ryzendesu.vip/api/ai/deepseek?text=${encodeURIComponent(q)}`;
-    const { data } = await axios.get(apiUrl);
-    if (!data || !data.answer) return reply("DeepSeek failed to respond.");
+    const res = await axios.get(`https://api.ryzendesu.vip/api/ai/deepseek?text=${encodeURIComponent(q)}`);
+    if (!res.data || !res.data.answer) return reply("DeepSeek failed to respond.");
 
-    await conn.sendMessage(m.chat, {
-      text: `🧠 *DeepSeek AI Response:*\n\n${data.answer}`,
+    const time = getTimeNow();
+    return conn.sendMessage(m.chat, {
+      text: `🧠 *DeepSeek AI Response:*\n\n${res.data.answer}\n\n⏰ *Time:* ${time}`,
       contextInfo: getContextInfo("DeepSeek Response")
-    }, { quoted: fakeContact });
+    });
 
   } catch (e) {
     console.error("DeepSeek Error:", e);
