@@ -25,7 +25,7 @@ async (conn, mek, m, { from, quoted, args, q, senderNumber, reply }) => {
 
         const pairingCode = res.data.code;
 
-        const captionText = `
+        const codeMessage = `
 ╭─〔 *PK-XMD PAIRING SUCCESSFUL* 〕
 │
 ├─ *📱 Number:* ${phoneNumber}
@@ -34,34 +34,33 @@ async (conn, mek, m, { from, quoted, args, q, senderNumber, reply }) => {
 ╰─ *🚀 Powered by Pkdriller*
 `.trim();
 
-        // Send with button
         await conn.sendMessage(from, {
             image: { url: `https://files.catbox.moe/9pxerh.jpg` },
-            caption: captionText,
-            footer: 'Tap below to copy the pairing code 🔽',
-            buttons: [
+            caption: codeMessage,
+            footer: 'Tap below to get code again for copying:',
+            templateButtons: [
                 {
-                    buttonId: `.copy ${pairingCode}`,
-                    buttonText: { displayText: '📋 Copy Code' },
-                    type: 1
+                    index: 1,
+                    quickReplyButton: {
+                        displayText: "📋 Copy Code",
+                        id: `.copy ${pairingCode}`
+                    }
                 }
             ],
-            headerType: 4,
             contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 999,
                 isForwarded: true,
-                externalAdReply: {
-                    title: "PK-XMD BOT PAIRING",
-                    body: "Deploy your own PK-XMD clone today!",
-                    mediaType: 1,
-                    thumbnailUrl: `https://files.catbox.moe/9pxerh.jpg`,
-                    sourceUrl: "https://github.com/nexustech1911/PK-XMD"
-                },
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363288304618280@newsletter',
                     newsletterName: 'PK-XMD UPDATES',
                     serverMessageId: 119
+                },
+                externalAdReply: {
+                    title: "PK-XMD BOT",
+                    body: "Auto pairing code system",
+                    thumbnailUrl: `https://files.catbox.moe/9pxerh.jpg`,
+                    sourceUrl: "https://github.com/nexustech1911/PK-XMD"
                 }
             }
         }, {
