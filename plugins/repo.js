@@ -13,7 +13,7 @@ cmd({
     filename: __filename,
 },
 async (conn, mek, m, { from, reply }) => {
-    const githubRepoURL = 'https://github.com/mejjar00254/PK-XMD';
+    const githubRepoURL = 'https://github.com/Pkphotographer1911/PK-XMD';
 
     try {
         const [, username, repoName] = githubRepoURL.match(/github\.com\/([^/]+)\/([^/]+)/);
