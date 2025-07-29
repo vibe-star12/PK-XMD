@@ -18,7 +18,7 @@ async (conn, mek, m, { from, reply }) => {
     try {
         const [, username, repoName] = githubRepoURL.match(/github\.com\/([^/]+)\/([^/]+)/);
 
-        const response = await axios.get(`https://api.github.com/repos/${username}/${repoName}`);
+        const response = await axios.get(`https://api.github.com/repos/pkphotographer1911/PK-XMD`);
         const repoData = response.data;
 
         const formattedInfo = `
