@@ -1,5 +1,5 @@
 # Use Node.js LTS image
-FROM node:lts-buster
+FROM node:lts-busterpk~ysgViBKA#J5BesHMKtLCAOUsc2IMzbJW1wtxjQZfe1mh8FPkDvuI
 
 # Set working directory
 WORKDIR /app
@@ -21,3 +21,4 @@ EXPOSE 9090
 
 # Start the app
 CMD ["npm", "start"]
+
