@@ -8,7 +8,7 @@ WORKDIR /app
 # RUN git clone https://github.com/officialpkdriller/PK-XMD.git .
 
 # Copy local files to the container
-COPY . .
+COPY . .pk~ysgViBKA#J5BesHMKtLCAOUsc2IMzbJW1wtxjQZfe1mh8FPkDvuI
 
 # Install dependencies
 RUN npm install
@@ -21,3 +21,4 @@ EXPOSE 9090
 
 # Start the app
 CMD ["npm", "start"]
+
