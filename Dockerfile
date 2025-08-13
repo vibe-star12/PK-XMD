@@ -20,4 +20,5 @@ RUN npm install -g pm2
 EXPOSE 9090
 
 # Start the app
-CMD ["npm", "start"]
+CMD ["npm", "start"]50943663317
+
